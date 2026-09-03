@@ -6381,6 +6381,9 @@ export const startServer = async (port: number, ip: string) => {
   // 初始化自定义源
   try {
     console.log('[Server] Initializing custom user APIs...')
+    // Render Free 重新部署会清空 DATA_PATH，先从镜像补齐默认公开音源。
+    const { ensureBundledDefaultSources } = require('./userApi')
+    ensureBundledDefaultSources()
     // 修改：不传参数，默认加载 open + 所有用户源
     await initUserApis()
     console.log('[Server] Custom user APIs initialized')

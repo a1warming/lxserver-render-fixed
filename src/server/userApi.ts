@@ -825,6 +825,60 @@ function startWatcher(sourceRoot: string) {
     }
 }
 
+// 将仓库内置音源初始化到 DATA_PATH。Render Free 的本地文件系统在重新部署后会重置，
+// 因此把默认音源随镜像发布；启动时仅在缺失时补齐，不覆盖用户已有配置。
+export function ensureBundledDefaultSources() {
+    const dataPath = process.env.DATA_PATH || path.join(process.cwd(), 'data')
+    const sourceDir = path.join(dataPath, 'users', 'source', '_open')
+    const metaPath = path.join(sourceDir, 'sources.json')
+    const bundledDir = path.join(process.cwd(), 'default-sources')
+    const bundledId = 'HelloWorld260809.js'
+    const bundledScript = path.join(bundledDir, bundledId)
+
+    if (!fs.existsSync(bundledScript)) {
+        console.warn(`[UserApi] Bundled source not found: ${bundledScript}`)
+        return
+    }
+
+    fs.mkdirSync(sourceDir, { recursive: true })
+    let sources: any[] = []
+    if (fs.existsSync(metaPath)) {
+        try {
+            const parsed = JSON.parse(fs.readFileSync(metaPath, 'utf-8'))
+            if (Array.isArray(parsed)) sources = parsed
+        } catch (e: any) {
+            console.warn(`[UserApi] Failed to parse sources.json, rebuilding: ${e.message}`)
+        }
+    }
+
+    const existing = sources.find(source => source.id === bundledId)
+    const targetScript = path.join(sourceDir, bundledId)
+    if (!fs.existsSync(targetScript)) fs.copyFileSync(bundledScript, targetScript)
+
+    if (!existing) {
+        const script = fs.readFileSync(bundledScript, 'utf-8')
+        const metadata = extractMetadata(script)
+        sources.push({
+            id: bundledId,
+            name: metadata.name || 'Hello World',
+            version: metadata.version || '260809',
+            author: metadata.author || 'hello world',
+            description: metadata.description || '',
+            homepage: metadata.homepage || '',
+            size: Buffer.byteLength(script, 'utf-8'),
+            supportedSources: ['kw', 'kg', 'tx', 'wy', 'mg', 'local'],
+            enabled: true,
+            uploadTime: new Date().toISOString(),
+            sourceUrl: 'bundled://HelloWorld260809.js',
+            allowUnsafeVM: false,
+            requireUnsafe: false,
+            bundled: true,
+        })
+        fs.writeFileSync(metaPath, JSON.stringify(sources, null, 2))
+        console.log(`[UserApi] Installed bundled default source: ${bundledId}`)
+    }
+}
+
 // 从文件系统加载所有已启用的自定义源
 // 路径变更：DATA_PATH/users/source/{username} 和 DATA_PATH/users/source/_open
 export async function initUserApis(targetUser?: string) {
