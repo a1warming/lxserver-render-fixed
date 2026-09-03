@@ -4610,7 +4610,18 @@ const handleStartServer = async (port = 9527, ip = '127.0.0.1') => await new Pro
               // 2. Mixed Content Handling (Optional Proxy) implementation details handled by frontend now
               // But we can keep the log for debugging
               if (result.url.startsWith('http://')) {
-                // console.log(`[MusicUrl] Note: URL is HTTP, frontend might proxy if enabled: ${result.url}`)
+                // Prefer HTTPS for audio hosts that support it. MoonTVPlus is served over HTTPS,
+                // and browsers block direct HTTP audio as mixed content.
+                try {
+                  const httpsUrl = result.url.replace(/^http:\/\//, 'https://')
+                  const httpsResp = await needle('head', httpsUrl, null, {
+                    follow_max: 2,
+                    response_timeout: 4000,
+                    read_timeout: 4000,
+                    headers: { 'User-Agent': 'Mozilla/5.0' }
+                  })
+                  if (httpsResp.statusCode && httpsResp.statusCode < 400) result.url = httpsUrl
+                } catch (e) { }
               }
 
               result.requestedSource = songInfo.source
