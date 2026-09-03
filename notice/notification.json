@@ -1,0 +1,42 @@
+[
+    {
+        "comment": "=== 欢迎标语 ===",
+        "id": "welcome_slogan_v1",
+        "status": "active",
+        "type": "broadcast",
+        "logic": {
+            "interval_hours": -1
+        },
+        "ui": {
+            "title": "🎉 欢迎使用lxserver",
+            "message": "在这个纯净的音乐世界里，每一秒都是享受。\n祝您听歌愉快！",
+            "confirm_text": "开始探索",
+            "cancel_text": ""
+        },
+        "action": {
+            "type": "close"
+        }
+    },
+    {
+        "comment": "=== 版本更新 v2.0.0 ===",
+        "id": "update_v2_0_0",
+        "status": "active",
+        "type": "version",
+        "logic": {
+            "target_version": "v2.0.0",
+            "operator": "<",
+            "interval_hours": 24
+        },
+        "ui": {
+            "title": "发现新版本 v2.0.0",
+            "date": "2026-07-23",
+            "message": "本次更新包含核心重磅升级与多项功能增强：\n1. 🎵 本地音乐精准洗版与高品质音质记忆 (@bobcc4)\n2. 🔎 高级布尔逻辑搜索 (&, |, !, () 空格激活) 与错误提醒\n3. 🎶 本地歌曲平台校验收藏至歌单、共享曲库与权限细化\n4. 🚀 登出自动全量清理缓存、WebDAV 与 Subsonic 协议全面优化",
+            "confirm_text": "查看日志",
+            "cancel_text": "稍后提醒"
+        },
+        "action": {
+            "type": "link",
+            "url": "https://github.com/XCQ0607/lxserver/releases/tag/v2.0.0"
+        }
+    }
+]
